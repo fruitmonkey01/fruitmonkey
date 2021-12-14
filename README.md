@@ -36,6 +36,8 @@ Files included:
 4. Multimedia audio file: background.mid (background music audio file: midi format)
 5. startGame.py (Python Game file)
 
+![alt GameUI](https://github.com/fruitmonkey01/fruitmonkey/blob/main/GameUI_640x480.png)
+
 Function used in the project:
 
 1.pygame.init()
