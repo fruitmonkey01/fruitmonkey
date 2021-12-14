@@ -46,7 +46,8 @@ class GameEntity:
 		self.BANANA_ROW_NUMBER = 6
 		self.BANANA_COL_NUMBER = 10
 		self.BANANA_ROW_OFFSET = 35
-		self.BANANAS_REMAIN = self.BANANA_ROW_NUMBER * self.BANANA_COL_NUMBER
+		self.TOTAL_BANANA_NUMBERS = self.BANANA_ROW_NUMBER * self.BANANA_COL_NUMBER
+		self.BANANAS_REMAINS = self.TOTAL_BANANA_NUMBERS
 		self.BANANA_SPACE_X = 250
 		self.BANANA_SPACE_Y = 100
 		self.MONKEY_Y_POSITION = 512
@@ -105,15 +106,25 @@ class GameEntity:
 
 	def updateScore(self):
 		self.font = pygame.font.Font(None, self.TEXT_FONT_SIZE)
-		self.text = self.font.render("Bananas remain: %d" % self.BANANAS_REMAIN, 0, self.WHITE_COLOR)
+		self.text = self.font.render("Bananas remains: %d" % self.BANANAS_REMAINS, 0, self.WHITE_COLOR)
 		self.text_position = self.text.get_rect(centerx=self.windowSurfaceObj.get_width()/2, top=self.TEXT_Y_OFFSET)
 		self.windowSurfaceObj.blit(self.text, self.text_position)
+
+	def reachGoal(self):
+		self.font = pygame.font.Font(None, self.TEXT_FONT_SIZE)
+		self.text = self.font.render("Bananas collected: %d" % self.TOTAL_BANANA_NUMBERS, 0, self.WHITE_COLOR)
+		self.text_position = self.text.get_rect(centerx=self.windowSurfaceObj.get_width()/2, top=self.TEXT_Y_OFFSET)
+		self.windowSurfaceObj.blit(self.text, self.text_position)
+		self.APPLESERVED = False
 
 	def startGameLoop(self):
 		# Run the game loop
 		while self.PLAY_GAME:
 			# Fill the background color onto the surface object
 			self.windowSurfaceObj.fill(self.backgroundColor)
+
+			if self.BANANAS_REMAINS == 0:
+				self.reachGoal()
 
 			# banana draw
 			for b in self.bananas:
@@ -199,10 +210,11 @@ class GameEntity:
 			if self.bananaForRemoval != None:
 				# remove the banana hit by the apple
 				self.bananas.remove(self.bananaForRemoval)
-				self.BANANAS_REMAIN -= 1
+				self.BANANAS_REMAINS -= 1
 
 			# update and redraw the screen text
-			self.updateScore()
+			if self.BANANAS_REMAINS > 0:
+				self.updateScore()
 
 			# apple rebound handling when hit the player's monkey
 			if (self.bx >= mousex and self.bx <= mousex + self.MONKEY_WIDTH):
