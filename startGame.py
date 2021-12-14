@@ -25,7 +25,7 @@ import pygame, os, sys
 from pygame.locals import *
 
 # Pass the speed of game we want the game to run,
-# the higher GAME_SPEED_VALUE the faster game speed
+# the higher GAME_SPEED_VALUE the faster game speed (display refresh rate = 60 fps)
 class GameEntity:
 	def __init__(self, game_speed_value=60):
 		self.GAME_SPEED_VALUE = game_speed_value
@@ -65,19 +65,19 @@ class GameEntity:
 		self.windowSurfaceObj = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
 		pygame.display.set_caption(self.GAME_TITLE)
 
-		# Set up the background color to Black (R, G, B)
+		# Set up the background color to Black (Red, Green, Blue)
 		self.backgroundColor = pygame.Color(self.BACKGROUND_COLOR)
 
-		# Set up the background music
+		# Set up the background music file (midi format)
 		pygame.mixer.music.load('background.mid')
 		pygame.mixer.music.play(-1, 0.0)
 
 	def initMonkey(self):
 		self.monkey = pygame.image.load('monkey.png')
 		self.monkey = self.monkey.convert_alpha()
-		self.playerY = self.MONKEY_Y_POSITION
+		self.monkey_Y = self.MONKEY_Y_POSITION
 		self.monkeyRect = self.monkey.get_rect()
-		self.mousex, self.mousey = (24, self.playerY)
+		self.mousex, self.mousey = (25, self.monkey_Y)
 
 	def initApple(self):
 		self.apple = pygame.image.load('apple.png')
@@ -126,17 +126,17 @@ class GameEntity:
 			# get events from the queue
 			# for example mouse move event, keyboard press event
 			for event in pygame.event.get():
-				# get input event
+				# check input mouse click event, movement, and keyboard press event
 				if event.type == MOUSEBUTTONUP:
 					if not self.APPLESERVED:
 						self.APPLESERVED = True
-
+				# update monkey position based on the mouse movement
 				elif event.type == MOUSEMOTION:
 					mousex, mousey = event.pos
 					if mousex < self.SCREEN_WIDTH - self.MONKEY_WIDTH:
-						self.monkeyRect.topleft = (mousex, self.playerY)
+						self.monkeyRect.topleft = (mousex, self.monkey_Y)
 					else:
-						self.monkeyRect.topleft = (self.SCREEN_WIDTH - self.MONKEY_WIDTH, self.playerY)
+						self.monkeyRect.topleft = (self.SCREEN_WIDTH - self.MONKEY_WIDTH, self.monkey_Y)
 
 				# Exit by pressing 'q' key
 				elif event.type == KEYDOWN:
@@ -146,44 +146,44 @@ class GameEntity:
 						self.PLAY_GAME = False
 						self.stopGame()
 
-			# main game logic
+			# update apple positions in the 2D screen
 			if self.APPLESERVED:
 				self.appleRect.topleft = (self.bx, self.by)
 				# apple moving with step n pixels toward x and y (default apple speed)
 				self.bx += self.sx
 				self.by += self.sy
 
-			# apple hit y lower boundary
+			# apple hit y axis lower boundary
 			if self.by >= self.SCREEN_HEIGHT - self.APPLE_SIZE:
 				self.APPLESERVED = False
 				# serve next apple to the initial apple position
 				self.bx, self.by = (self.APPLE_INIT_X_POSITION, self.appleStartY)
 				self.appleRect.topleft = (self.bx, self.by)
 
-			# apple hit y upper boundary
+			# apple hit y axis upper boundary
 			if self.by <= 0:
 				self.by = 0
 				self.sy *= -1
 
-			# apple hit x left boundary
+			# apple hit x axis left boundary
 			if self.bx <= 0:
 				self.bx = 0
 				self.sx *= -1
 
-			# apple hit x right boundary
+			# apple hit x axis right boundary
 			if self.bx >= self.SCREEN_WIDTH - self.APPLE_SIZE:
 				self.bx = self.SCREEN_WIDTH - self.APPLE_SIZE
 				self.sx *= -1
 
-			# Bal and Brick collision detection
+			# apple and banana collision detection
 			self.bananaForRemoval = None
 			for b in self.bananas:
 				briX, briY = b
-				# Brick rectangle:
+				# banana rectangle:
 				if (self.bx >= briX and self.bx <= briX + self.BANANA_WIDTH):
 					if (self.by >= briY and self.by <= briY + self.BANANA_HEIGHT):
 						self.bananaForRemoval = b
-						# Ball rebound handling when hit the banana (31 x 16)
+						# apple rebound handling when hit the banana object
 						# for banana width
 						if (self.bx <= briX + 2):
 							self.sx *= -1
@@ -201,12 +201,12 @@ class GameEntity:
 				self.bananas.remove(self.bananaForRemoval)
 				self.BANANAS_REMAIN -= 1
 
-			# Draw text
+			# update and redraw the screen text
 			self.updateScore()
 
-			# Ball rebound handling when hit the player's monkey
+			# apple rebound handling when hit the player's monkey
 			if (self.bx >= mousex and self.bx <= mousex + self.MONKEY_WIDTH):
-				if (self.by >= self.playerY - self.APPLE_SIZE and self.by <= self.playerY):
+				if (self.by >= self.monkey_Y - self.APPLE_SIZE and self.by <= self.monkey_Y):
 					self.sy *= -1
 
 			# Update the score text on the screen.
@@ -215,16 +215,18 @@ class GameEntity:
 			# Passed Frames Per Second we want the game to run, the higher the faster
 			self.gameSpeedSetting.tick(self.GAME_SPEED_VALUE)
 
+	# start running the game
 	def runGame(self):
 		self.configGameSettings()
 		self.initUI()
 		self.startGameLoop()
 
+	# clean up game
 	def stopGame(self):
 		pygame.quit()
 		sys.exit()
 
-# Press the green button in the gutter to run the script.
+# Game entry point
 if __name__ == '__main__':
     game1 = GameEntity(100).runGame()
 
